@@ -1,14 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>16x16 Grid</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 
-    <script src="script.js" defer></script>
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
+  <div class="container">
+    <h1>Etch-A-Sketch</h1>
+    <div id="grid"></div>
+    <div class="controls">
+      <button id="rgb-btn"><span class="red">R</span><span class="green">G</span><span class="blue">B</span></button>
+      <div class="mcontrols">
+          <div class="grid-size-text">24 x 24</div>
+          <input id="grid-size-slider" type="range" value="24" min="1" max="100">
+          <input id="color-picker" type="color" value="#646464">
+          <button id="darkening-btn">TOGGLE DARKENING</button>
+      </div>
+      <button id="clear-btn">CLEAR</button>
+  </div>
+  </div>
+  <div id="copyright">
+    © 2024 - Designed and Developed by 
+    <a href="https://github.com/evolvingsam" class="github-link">Samuel Alawode</a>
+</div>
+
+
 </body>
 </html>

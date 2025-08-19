@@ -1,107 +1,210 @@
-const gridSize = 16;
-const container = document.createElement('div');
-container.style.display = 'flex';
-container.style.flexWrap = 'wrap';
-container.style.width = '640px';
-container.style.height = '640px';
-container.style.border = '1px solid #ccc';
-container.style.margin = '20px auto';
+const DEFAULT_COLOR = "#252525ff";
 
-const squareSize = 640 / gridSize;
+let grid = document.querySelector("#grid");
+let gridChildren = null;
+let gridWidth = grid.getBoundingClientRect().width;
+let clearButton = document.querySelector("#clear-btn");
+let colorPicker = document.querySelector("#color-picker");
+let gridSizeSlider = document.querySelector("#grid-size-slider");
+let gridSizeText = document.querySelector("#grid-size-text");
+let darkeningButton = document.querySelector("#darkening-btn");
+let rgbButton = document.querySelector("#rgb-btn");
+let contaiener = document.querySelector(".container");
 
-function createGrid(container, size, squareSize) {
-    for (let i = 0; i < size * size; i++) {
-        const square = document.createElement('div');
-        square.style.width = `${squareSize}px`;
-        square.style.height = `${squareSize}px`;
-        square.style.boxSizing = 'border-box';
-        square.style.border = '1px solid #eee';
-        square.style.background = '#fff';
-        container.appendChild(square);
+
+let currentColor = DEFAULT_COLOR;
+let isDarkening = false;
+let isRGB = false;
+let hue = 0;
+let currentNode = null;
+let previousNode = null;
+let gridSize;
+
+let mouseDown = false;
+documentbody.onmousedown = () => {
+    mouseDown = true;
+}
+documentbody.onmouseup = () => {
+    mouseDown = false;
+}
+
+gridSizeSlider.oninput = (e) => {
+    updateGridSizeText(e.target.value);
+}
+gridSizeSlider.onchange = (e) => {
+    updateGridSizeText(e.target.value);
+}
+
+colorPicker.onchange = (e) => {
+    updateColor(e.target.value);
+}
+
+
+function createGrid(dimension) {
+    gridSize = dimension;
+
+    let gridNum = dimension * dimension;
+
+    for (let i = 0; i < gridNum; i++) {
+        let square = document.createElement("div");
+        square.style.width = `${gridWidth / dimension}px`;
+        square.style.height = `${gridWidth / dimension}px`;
+
+        if (isDarkening) {
+            square.style.opacity = "0";
+        }
+
+
+        grid.appendChild(square);
+
+    gridChildren = grid.childNodes;
+
+    }
+
+}
+
+function updateGridSize(value) {
+    grid.innerHTML = '';
+    createGrid(value);
+}
+
+function updateGridSizeText(value) {
+    gridSizeText.textContent = `${value} x ${value}`;
+}
+
+function updateColor(value) {
+    currentColor = value;
+}
+
+function getChildIndex(child) {
+    let children = grid.childNodes;
+
+    for (let i = 0; i < children.length; i++) {
+        if (children[i] === child) {
+            return i;
+        }
     }
 }
 
-createGrid(container, gridSize, squareSize);
+function getChildCoordinate(child) {
+    let childIndex = getChildIndex(child);
 
-updateSquareListeners(container);
+    let row = Math.floor(childIndex / gridSize);
+    let col = childIndex % gridSize;
 
-document.body.appendChild(container);
-const button = document.createElement('button');
-button.textContent = 'New Grid';
-button.style.display = 'block';
-button.style.margin = '20px auto';
-button.style.padding = '10px 20px';
-button.style.fontSize = '16px';
+    return [row, col];
+}
+function convertCoordinatetoIndex(row, col) {
+    return row * gridSize + col;
+}
 
-button.addEventListener('click', () => {
-    let newSize = prompt('Enter number of squares per side (max 100):', '16');
-    newSize = parseInt(newSize, 10);
-    if (isNaN(newSize) || newSize < 1 || newSize > 100) {
-        alert('Please enter a valid number between 1 and 100.');
+function plotLine() {
+    let [x0, y0] = getChildCoordinate(previousNode);
+    let [x1, y1] = getChildCoordinate(currentNode);
+
+    let dx = Math.abs(x1 - x0);
+    let sx = (x0 < x1) ? 1 : -1;
+    let dy = -(Math.abs(y1 - y0));
+    let sy = (y0 < y1) ? 1 : -1;
+    let error = dx + dy;
+
+    let lineArray = []
+
+    while (true) {
+        lineArray.push([x0, y0]);
+        if (x0 === x1 && y0 === y1) {
+            break;
+        }
+
+        let e2 = 2 * error;
+
+        if (e2 >= dy) {
+            error = error + dy;
+            x0 = x0 + sx;
+        }
+
+        if (e2 <= dx) {
+            error = error + dx;
+            y0 = y0 + sy;
+        }
+    }
+
+    if (lineArray.length === 2) {
+        let childIndex = convertCoordinatetoIndex(...lineArray[1]);
+        colorSquare(gridChildren[childIndex]);
         return;
     }
 
-    container.remove();
-    const newContainer = document.createElement('div');
-    newContainer.style.display = 'flex';
-    newContainer.style.flexWrap = 'wrap';
-    newContainer.style.width = '960px';
-    newContainer.style.height = '960px';
-    newContainer.style.border = '1px solid #ccc';
-    newContainer.style.margin = '20px auto';
-
-    const newSquareSize = 960 / newSize;
-
-    createGrid(newContainer, newSize, newSquareSize);
-
-    updateSquareListeners(newContainer);
-
-    document.body.appendChild(newContainer);
-});
-
-document.body.insertBefore(button, document.body.firstChild);
-const modeButton = document.createElement('button');
-modeButton.textContent = 'Mode: Monochrome';
-modeButton.style.display = 'block';
-modeButton.style.margin = '10px auto';
-modeButton.style.padding = '10px 20px';
-modeButton.style.fontSize = '16px';
-
-let colorMode = 'monochrome';
-
-modeButton.addEventListener('click', () => {
-    colorMode = colorMode === 'monochrome' ? 'rgb' : 'monochrome';
-    modeButton.textContent = `Mode: ${colorMode.charAt(0).toUpperCase() + colorMode.slice(1)}`;
-});
-
-// Helper function to get color based on mode
-function getColor() {
-    if (colorMode === 'monochrome') {
-        return '#000';
-    } else {
-        const r = Math.floor(Math.random() * 256);
-        const g = Math.floor(Math.random() * 256);
-        const b = Math.floor(Math.random() * 256);
-        return `rgb(${r},${g},${b})`;
+    for (let i = 0; i < lineArray.length; i++){
+        let childIndex = convertCoordinatetoIndex(...lineArray[i]);
+        colorSquare(gridChildren[childIndex]);
     }
 }
+grid.addEventListener("mousedown", (e) => {
+    currentNode = e.target;
+    colorSquare(e.target);
+})
 
-// Update event listeners for squares to use getColor
-function updateSquareListeners(container) {
-    container.childNodes.forEach(square => {
-        square.addEventListener('mouseenter', () => {
-            square.style.background = getColor();
-        });
-    });
-}
+grid.addEventListener("mouseover", (e) => {
+    if (mouseDown === true) {
+        if (currentNode === null) {
+            currentNode = e.target;
+            colorSquare(e.target);
+            return;
+        }
+        previousNode = currentNode;
+        currentNode = e.target;
+        plotLine();
+    }
+})
 
-// Initial squares use getColor
-updateSquareListeners(container);
+clearButton.addEventListener("click", () => {
+    let gridChildren = grid.children;
+    for (let i = 0; i < gridChildren.length; i++) {
+        gridChildren[i].style.backgroundColor = "";
+        if (isDarkeningdarkening === true) {
+            gridChildren[i].style.opacity = "0";
+        } else {
+            gridChildren[i].style.opacity = "1";
+        }
+    }
+})
 
-// Update event listeners for new grid
-button.addEventListener('click', () => {
-    // ...existing code...
-    updateSquareListeners(newContainer);
-});
+darkeningButton.addEventListener("click", () => {
+    
+    if (isDarkening === true) {
+        isDarkening = false;
+        for (let i = 0; i < gridChildren.length; i++) {
+            if (gridChildren[i].style.backgroundColor === "") {
+                gridChildren[i].style.opacity = "1";
+            }
+        }
+        darkeningButton.style.backgroundColor = "#D9D9D9";
+        darkeningButton.style.color = "#464646";
+        darkeningButton.style.boxShadow = "0 4px 2px 0 rgba(0, 0, 0, 0.25), 0 -2px 1px 4px rgba(0, 0, 0, .25) inset";
+    } else {
+        isDarkeningdarkening = true;
+        for (let i = 0; i < gridChildren.length; i++) {
+            if (gridChildren[i].style.backgroundColor === "") {
+                gridChildren[i].style.opacity = "0";
+            }
+        }
+        darkeningButton.style.backgroundColor = "#323232";
+        darkeningButton.style.color = "white";
+        darkeningButton.style.boxShadow = "0 4px 2px 0 rgba(0, 0, 0, 0.25), 0 2px 1px 4px rgba(0, 0, 0, .25) inset";
+    }
+})
 
-document.body.insertBefore(modeButton, button);
+rgbButton.addEventListener("click", () =>{
+    if (rgb === true) {
+        rgb = false;
+        mcontrols.classList.remove("gradient-shadow");
+    } else {
+        rgb = true;
+        mcontrols.classList.add("gradient-shadow");
+    }
+})
+
+
+
+createGrid(16);

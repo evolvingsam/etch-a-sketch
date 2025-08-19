@@ -9,7 +9,7 @@ let gridSizeSlider = document.querySelector("#grid-size-slider");
 let gridSizeText = document.querySelector("#grid-size-text");
 let darkeningButton = document.querySelector("#darkening-btn");
 let rgbButton = document.querySelector("#rgb-btn");
-let contaiener = document.querySelector(".container");
+let container = document.querySelector(".container");
 
 
 let currentColor = DEFAULT_COLOR;
@@ -21,18 +21,18 @@ let previousNode = null;
 let gridSize;
 
 let mouseDown = false;
-documentbody.onmousedown = () => {
+document.body.onmousedown = () => {
     mouseDown = true;
 }
-documentbody.onmouseup = () => {
+document.body.onmouseup = () => {
     mouseDown = false;
 }
 
-gridSizeSlider.oninput = (e) => {
+gridSizeSlider.onmousemove = (e) => {
     updateGridSizeText(e.target.value);
 }
 gridSizeSlider.onchange = (e) => {
-    updateGridSizeText(e.target.value);
+    updateGridSize(e.target.value);
 }
 
 colorPicker.onchange = (e) => {
@@ -62,6 +62,28 @@ function createGrid(dimension) {
     }
 
 }
+
+function colorSquare(element) { 
+    element.style.backgroundColor = currentColor;
+
+    if (isRGB) {
+        element.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+        hue += 5;
+
+        if (hue > 360) {
+            hue = 0;
+        }
+    } 
+    
+    if (isDarkening) {
+        element.style.opacity = parseFloat(element.style.opacity) + .1;
+        return;
+    }
+     
+    element.style.opacity = "1";
+    
+}
+
 
 function updateGridSize(value) {
     grid.innerHTML = '';
@@ -162,7 +184,7 @@ clearButton.addEventListener("click", () => {
     let gridChildren = grid.children;
     for (let i = 0; i < gridChildren.length; i++) {
         gridChildren[i].style.backgroundColor = "";
-        if (isDarkeningdarkening === true) {
+        if (isDarkening === true) {
             gridChildren[i].style.opacity = "0";
         } else {
             gridChildren[i].style.opacity = "1";
@@ -196,12 +218,12 @@ darkeningButton.addEventListener("click", () => {
 })
 
 rgbButton.addEventListener("click", () =>{
-    if (rgb === true) {
-        rgb = false;
-        mcontrols.classList.remove("gradient-shadow");
+    if (isRGB) {
+        isRGB = false;
+        container.classList.remove("gradient-shadow");
     } else {
-        rgb = true;
-        mcontrols.classList.add("gradient-shadow");
+        isRGB = true;
+        container.classList.add("gradient-shadow");
     }
 })
 

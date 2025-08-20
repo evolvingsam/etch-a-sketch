@@ -1,7 +1,7 @@
 body {
     margin: 0;
     padding: 0;
-    /* background-color: #141024; */
+    background-color: #141024;
     height: 100vh;
     color: #FFD04D;
     display: flex;
@@ -10,10 +10,7 @@ body {
     align-items: center;
     font-family: 'VT323', sans-serif;
 }
-@keyframes body {
-  from {background-color: #141024;}
-  to {background-color: #9cb31b;}
-}
+
 h1 {
     margin: 8px;
     padding: 0;
